@@ -17,7 +17,7 @@ export default function Heatmap(){
     const timestamp = new Date(d[0]);
     return { 
       timeslot: timestamp.getHours(),
-      day: timestamp.getDay(),
+      day: timestamp.getDay() === 0 ? 7 : timestamp.getDay(), // moving Sunday to end of week instead of start of week
       powerConsumption: d[2],
       longestBlipGap: d[4],
       shortestBlipGap: d[3],
@@ -30,29 +30,44 @@ export default function Heatmap(){
     let key1 = obj.timeslot
     let key2 = obj.day;
     if(!acc[key1]){
-      acc[key1] = [];
+      acc[key1] = {};
     }
     if(!acc[key1][key2]){
       acc[key1][key2] = [];
     }
     acc[key1][key2].push(obj);
     return acc
-  }, []);
+  }, {});
 
-  const pivot = dataGrouped.map(d => d.map(d => d.reduce((avg, value, _, { length }) => avg + value.powerConsumption / length, 0)));
-  
-  const rows = pivot.map((d, i) => {
-    return (
-      <tr>
-        <td style={{ textAlign: 'center' }}>{i}:00-{i+1}:00</td>
-        {d.map((t, j) => <td style={{ 
-          color: t < 1000 ? 'lightgrey' : 'black', 
-          backgroundColor: `rgb(${t/1500 * 256}, 0, 0)`,
+  const rows = [];
+  for (let timeslot = 0; timeslot < 24; timeslot++){
+    const days = [];
+    for (let day = 1; day < 8; day++){
+      let powerConsumption = 0;
+      let dataExists = false;
+      if(dataGrouped[timeslot]){
+        if(dataGrouped[timeslot][day]){
+          powerConsumption = dataGrouped[timeslot][day].reduce((avg, val, _, { length }) => avg + val.powerConsumption / length, 0);
+          dataExists = true;
+        }
+      }
+      days[day] = (dataExists ? 
+        <td style={{
+          color: powerConsumption < 1000 ? 'lightgrey' : 'black', 
+          backgroundColor: `rgb(${powerConsumption / 1500 * 256}, 0, 0)`,
           textAlign: 'center'
-        }}>{t.toFixed()}</td>)}
+        }}>{powerConsumption.toFixed()}</td> :
+        <td></td>
+      )
+    }
+    rows[timeslot] = (
+      <tr>
+        <td style={{ textAlign: 'center' }}>{timeslot}:00-{timeslot+1}:00</td>
+        {days}
       </tr>
     )
-  });
+  }
+  
 
   return (
     <div>

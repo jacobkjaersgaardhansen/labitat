@@ -7,7 +7,7 @@ function App() {
   return (
     <div className="App">
       <Heatmap />
-      {/*<Table />*/}
+      <Table />
     </div>
   );
 }
