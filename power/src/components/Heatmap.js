@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from 'react';
 
-const timeStart = new Date('2020-02-01 00:00:00').getTime();
-const timeEnd = new Date('2020-02-16 23:59:59').getTime();
-
 export default function Heatmap(){
+  const [timeStart, setTimeStart] = useState('2020-01-01');
+  const [timeEnd, setTimeEnd] = useState('2020-02-17');
   const [data, setData] = useState([]);
+
   useEffect(() => {
     const getHourly = async () => {
-      const response = await fetch(`https://power.labitat.dk/hourly/${timeStart}/${timeEnd}`);
+      const response = await fetch(`https://power.labitat.dk/hourly/${new Date(timeStart).getTime()}/${new Date(timeEnd).getTime()}`);
       response.status === 200 && setData(await response.json());
     };
     getHourly();
-  }, []);
+  }, [timeStart, timeEnd]);
   
   const dataEnriched = data.map(d => {
     const timestamp = new Date(d[0]);
@@ -25,16 +25,7 @@ export default function Heatmap(){
       blipsCount: d[1]
     }
   });
-/*
-  const dataGrouped = dataEnriched.reduce((acc, obj) => {
-    let key = obj.day * 24 + obj.timeslot;
-    if(!acc[key]){
-      acc[key] = [];
-    }
-    acc[key].push(obj);
-    return acc
-  }, new Array(24 * 7));
-*/
+
   const dataGrouped = dataEnriched.reduce((acc, obj) => {
     let key1 = obj.timeslot
     let key2 = obj.day;
@@ -53,18 +44,28 @@ export default function Heatmap(){
   const rows = pivot.map((d, i) => {
     return (
       <tr>
-        <th>{i}</th>
-        {d.map((t, j) => <td>{t.toFixed()}</td>)}
+        <td style={{ textAlign: 'center' }}>{i}:00-{i+1}:00</td>
+        {d.map((t, j) => <td style={{ 
+          color: t < 1000 ? 'lightgrey' : 'black', 
+          backgroundColor: `rgb(${t/1500 * 256}, 0, 0)`,
+          textAlign: 'center'
+        }}>{t.toFixed()}</td>)}
       </tr>
     )
   });
 
   return (
     <div>
+      <form>
+        <label htmlFor="start">Start date</label>
+        <input id='start' type="date" value={timeStart} onChange={e => setTimeStart(e.target.value)} />
+        <label htmlFor="end">End date</label>
+        <input id='end' type="date" value={timeEnd} onChange={e => setTimeEnd(e.target.value)} />
+      </form>
       <table style={{ width: "100%" }}>
         <thead>
           <tr>
-            <th>Time</th>
+            <th>Timeslot</th>
             <th>Mon</th>
             <th>Tue</th>
             <th>Wed</th>
