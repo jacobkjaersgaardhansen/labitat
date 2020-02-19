@@ -8,8 +8,8 @@ export default function Heatmap(){
   
 
   useEffect(() => {
-    const timeStart = new Date(`${dateStart} 00:00:00.000`).getTime();
-    const timeEnd = new Date(`${dateEnd} 23:59:59.999`).getTime();
+    const timeStart = new Date(`${dateStart}T00:00:00.000Z`).getTime();
+    const timeEnd = new Date(`${dateEnd}T23:59:59.999Z`).getTime();
     const getHourly = async () => {
       const response = await fetch(`https://power.labitat.dk/hourly/${timeStart}/${timeEnd}`);
       response.status === 200 && setData(await response.json());
