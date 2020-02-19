@@ -55,21 +55,29 @@ export default function Heatmap(){
   
   return (
     <div className="jumbotron">
-      <h3>Average power usage during the week</h3>
-      <p>The table shows the average power usage in watts across the 24 times 7 hourly timeslots any week contains.
-        The average is calculated across the given range with both days included.
-      </p>
-      <form>
-        <label htmlFor="start">Start date</label>
-        <input id='start' type="date" value={dateStart} onChange={e => setdateStart(e.target.value)} />
-        <label htmlFor="end">End date</label>
-        <input id='end' type="date" value={dateEnd} onChange={e => setdateEnd(e.target.value)} />
-      </form>
-      <p>The color is currently saturated at {threshold} W.</p>
-      <form>
-        <label htmlFor="threshold">Threshold</label>
-        <input id='threshold' type="range" min="0" max="5000" step="100" value={threshold} onChange={e => setThreshold(e.target.value)} />
-      </form>
+      <div style={{ maxWidth: "600px" }}>
+        <h3>Average power usage during the week</h3>
+        <p>The table shows the average power usage in watts across the 24 times 7 hourly timeslots any week contains.</p>
+        <p>The averages are calculated across the given range with both days included.</p>
+        <form style={{ maxWidth: "350px" }}>
+          <fieldset>
+            <div className="form-group">
+              <label htmlFor="range">Range</label>
+              <div id="range" style={{ display: "flex", flex: 1, flexDirection: "row", justifyContent: "space-between" }}>
+                <input id='start' type="date" className="form-control" style={{ width: "170px" }} value={dateStart} onChange={e => setdateStart(e.target.value)} />  
+                <input id='end' type="date" className="form-control" style={{ width: "170px" }} value={dateEnd} onChange={e => setdateEnd(e.target.value)} />
+              </div>
+            </div>
+          </fieldset>
+        </form>
+        <p>The color is currently saturated at {threshold} W.</p>
+        <form style={{ maxWidth: "250px" }}>
+          <fieldset className="form-group">
+            <label htmlFor="threshold">Saturation threshold</label>
+            <input id='threshold' className="custom-range" type="range" min="0" max="5000" step="100" value={threshold} onChange={e => setThreshold(e.target.value)} />
+          </fieldset>
+        </form>
+      </div>
       <table style={{ width: "100%", textAlign: "center" }}>
         <thead>
           <tr>
