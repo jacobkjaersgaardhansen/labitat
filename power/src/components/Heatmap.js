@@ -6,7 +6,6 @@ export default function Heatmap(){
   const [threshold, setThreshold] = useState(1500);
   const [data, setData] = useState([]);
   
-
   useEffect(() => {
     const timeStart = new Date(dateStart).setHours(0);
     const timeEnd = new Date(dateEnd).setHours(23, 59, 59, 999);
@@ -47,7 +46,8 @@ export default function Heatmap(){
     }
     rows.push(
       <tr key={timeslot}>
-        <td style={{ textAlign: 'center' }}>{timeslot}:00 - {timeslot+1}:00</td>
+        <td id="tdVerbose" style={{ textAlign: 'center' }}>{timeslot}:00 - {timeslot+1}:00</td>
+        <td id="tdConcise" style={{ textAlign: 'center' }}>{timeslot} - {timeslot+1}</td>
         {days}
       </tr>
     )
@@ -64,8 +64,8 @@ export default function Heatmap(){
             <div className="form-group">
               <label htmlFor="range">Range</label>
               <div id="range" style={{ display: "flex", flex: 1, flexDirection: "row", justifyContent: "space-between" }}>
-                <input id='start' type="date" className="form-control" style={{ width: "170px" }} value={dateStart} onChange={e => setdateStart(e.target.value)} />  
-                <input id='end' type="date" className="form-control" style={{ width: "170px" }} value={dateEnd} onChange={e => setdateEnd(e.target.value)} />
+                <input id='start' type="date" className="form-control" style={{ maxWidth: "170px" }} value={dateStart} onChange={e => setdateStart(e.target.value)} />  
+                <input id='end' type="date" className="form-control" style={{ maxWidth: "170px" }} value={dateEnd} onChange={e => setdateEnd(e.target.value)} />
               </div>
             </div>
           </fieldset>
