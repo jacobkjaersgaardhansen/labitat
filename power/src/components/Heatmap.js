@@ -3,7 +3,9 @@ import React, { useState, useEffect } from 'react';
 export default function Heatmap(){
   const [dateStart, setdateStart] = useState('2020-01-01');
   const [dateEnd, setdateEnd] = useState(new Date().toISOString().substring(0, 10));
+  const [threshold, setThreshold] = useState(1500);
   const [data, setData] = useState([]);
+  
 
   useEffect(() => {
     const timeStart = new Date(`${dateStart} 00:00:00.000`).getTime();
@@ -36,8 +38,8 @@ export default function Heatmap(){
       const powerConsumption = dataPoints.reduce((avg, value, _, { length }) => avg + value.powerConsumption / length, 0);
       days.push(dataPoints.length > 0 ? 
         <td key={day} style={{
-          color: powerConsumption < 1000 ? 'lightgrey' : 'black', 
-          backgroundColor: `rgb(${powerConsumption / 1500 * 256}, 0, 0)`,
+          color: powerConsumption < threshold / 3 * 2 ? 'lightgrey' : 'black', 
+          backgroundColor: `rgb(${powerConsumption / threshold * 256}, 0, 0)`,
           textAlign: 'center'
         }}>{powerConsumption.toFixed()}</td> :
         <td key={day}></td>
@@ -52,14 +54,23 @@ export default function Heatmap(){
   }
   
   return (
-    <div>
+    <div className="jumbotron">
+      <h3>Average power usage during the week</h3>
+      <p>The table shows the average power usage in watts across the 24 times 7 hourly timeslots any week contains.
+        The average is calculated across the given range with both days included.
+      </p>
       <form>
         <label htmlFor="start">Start date</label>
         <input id='start' type="date" value={dateStart} onChange={e => setdateStart(e.target.value)} />
         <label htmlFor="end">End date</label>
         <input id='end' type="date" value={dateEnd} onChange={e => setdateEnd(e.target.value)} />
       </form>
-      <table style={{ width: "100%" }}>
+      <p>The color is currently saturated at {threshold} W.</p>
+      <form>
+        <label htmlFor="threshold">Threshold</label>
+        <input id='threshold' type="range" min="0" max="5000" step="100" value={threshold} onChange={e => setThreshold(e.target.value)} />
+      </form>
+      <table style={{ width: "100%", textAlign: "center" }}>
         <thead>
           <tr>
             <th>Timeslot</th>

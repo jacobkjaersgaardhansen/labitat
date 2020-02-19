@@ -41,8 +41,9 @@ export default function Table(){
   })
 
   return (
-    <div>
-      <table style={{ width: "100%" }}>
+    <div className="jumbotron">
+      <h3>Latest measurements</h3>
+      <table style={{ width: "100%", maxWidth: "400px", textAlign: "center"}}>
         <thead>
           <tr>
             <th>Timestamp</th>
