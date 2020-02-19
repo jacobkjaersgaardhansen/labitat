@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 
 export default function Heatmap(){
   const [dateStart, setdateStart] = useState('2020-01-01');
-  const [dateEnd, setdateEnd] = useState('2020-02-17');
+  const [dateEnd, setdateEnd] = useState(new Date().toISOString().substring(0, 10));
   const [data, setData] = useState([]);
 
   useEffect(() => {
@@ -12,7 +12,7 @@ export default function Heatmap(){
       const response = await fetch(`https://power.labitat.dk/hourly/${timeStart}/${timeEnd}`);
       response.status === 200 && setData(await response.json());
     };
-    getHourly();
+    timeStart && timeEnd && getHourly(); // only fetch data if timeStart and timeEnd are proper integers
   }, [dateStart, dateEnd]);
   
   const dataEnriched = data.map(d => {
