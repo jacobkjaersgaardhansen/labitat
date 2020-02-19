@@ -8,13 +8,13 @@ export default function Heatmap(){
   
 
   useEffect(() => {
-    const timeStart = new Date(`${dateStart}T00:00:00.000Z`).getTime();
-    const timeEnd = new Date(`${dateEnd}T23:59:59.999Z`).getTime();
+    const timeStart = new Date(dateStart).setHours(0);
+    const timeEnd = new Date(dateEnd).setHours(23, 59, 59, 999);
     const getHourly = async () => {
       const response = await fetch(`https://power.labitat.dk/hourly/${timeStart}/${timeEnd}`);
       response.status === 200 && setData(await response.json());
     };
-    timeStart && timeEnd && getHourly(); // only fetch data if timeStart and timeEnd are proper integers
+    timeStart > 0 && timeEnd > 0 && getHourly(); // only fetch data if timeStart and timeEnd are proper integers
   }, [dateStart, dateEnd]);
   
   const dataEnriched = data.map(d => {
