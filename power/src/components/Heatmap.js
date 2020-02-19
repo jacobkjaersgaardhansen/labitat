@@ -19,7 +19,7 @@ export default function Heatmap(){
     const timestamp = new Date(d[0]);
     return { 
       timeslot: timestamp.getHours(),
-      day: (timestamp.getDay() - 1) % 7, // moving Sunday to end of week instead of start of week
+      day: (timestamp.getDay() + 6) % 7, // moving Sunday to end of week instead of start of week
       powerConsumption: d[2],
       longestBlipGap: d[4],
       shortestBlipGap: d[3],
@@ -35,16 +35,16 @@ export default function Heatmap(){
       const dataPoints = dataEnriched.filter(d => d.timeslot === timeslot && d.day === day);
       const powerConsumption = dataPoints.reduce((avg, value, _, { length }) => avg + value.powerConsumption / length, 0);
       days.push(dataPoints.length > 0 ? 
-        <td style={{
+        <td key={day} style={{
           color: powerConsumption < 1000 ? 'lightgrey' : 'black', 
           backgroundColor: `rgb(${powerConsumption / 1500 * 256}, 0, 0)`,
           textAlign: 'center'
         }}>{powerConsumption.toFixed()}</td> :
-        <td></td>
+        <td key={day}></td>
       )
     }
     rows.push(
-      <tr>
+      <tr key={timeslot}>
         <td style={{ textAlign: 'center' }}>{timeslot}:00 - {timeslot+1}:00</td>
         {days}
       </tr>
