@@ -1,9 +1,16 @@
 import React, { useState, useEffect } from 'react';
 
+const default_thresholdIgnore = "500"; // W
+const default_thresholdSaturation = "1700"; // W
+const range_max = 5000; // W
+const range_handle_width = 16; // px
+const range_width = 250; // px
+
 export default function Heatmap(){
   const [dateStart, setdateStart] = useState('2020-01-01');
   const [dateEnd, setdateEnd] = useState(new Date().toISOString().substring(0, 10));
-  const [threshold, setThreshold] = useState(1500);
+  const [thresholdIgnore, setThresholdIgnore] = useState(default_thresholdIgnore);
+  const [thresholdSaturation, setThresholdSaturation] = useState(default_thresholdSaturation);
   const [data, setData] = useState([]);
   
   useEffect(() => {
@@ -35,10 +42,10 @@ export default function Heatmap(){
     for (let day = 0; day < 7; day++){
       const dataPoints = dataEnriched.filter(d => d.timeslot === timeslot && d.day === day);
       const powerConsumption = dataPoints.reduce((avg, value, _, { length }) => avg + value.powerConsumption / length, 0);
-      days.push(dataPoints.length > 0 ? 
+      days.push(dataPoints.length > 0 && powerConsumption > thresholdIgnore ? 
         <td key={day} style={{
-          color: powerConsumption < threshold / 3 * 2 ? 'lightgrey' : 'black', 
-          backgroundColor: `rgb(${powerConsumption / threshold * 256}, 0, 0)`,
+          color: powerConsumption - thresholdIgnore < (thresholdSaturation - thresholdIgnore) / 3 * 2 ? 'lightgrey' : 'black', 
+          backgroundColor: thresholdIgnore === thresholdSaturation ? 'red' : `rgb(${256 * (1 / (thresholdSaturation - thresholdIgnore) * powerConsumption + 1 / (1 - thresholdSaturation / thresholdIgnore))}, 0, 0)`,
           textAlign: 'center'
         }}>{powerConsumption.toFixed()}</td> :
         <td key={day}></td>
@@ -57,8 +64,15 @@ export default function Heatmap(){
     <div className="jumbotron">
       <div style={{ maxWidth: "600px" }}>
         <h3>Average power usage during the week</h3>
-        <p>The table shows the average power usage in watts across the 24 times 7 hourly timeslots any week contains.</p>
-        <p>The averages are calculated across the given range with both days included.</p>
+        <p>
+          The table shows the average power usage in watts across a week's 
+          24 times 7 hourly timeslots. Only timeslots for which the power usage 
+          is above {default_thresholdIgnore}&nbsp;W are shown by default, as this indicates when people 
+          are normally present in the lab. 
+          Likewise is the color saturation an indication of the expected activity.
+          Both thresholds are adjustable.
+        </p>
+        <p>The averages are calculated across the given range including both days.</p>
         <form style={{ maxWidth: "350px" }}>
           <fieldset>
             <div className="form-group">
@@ -70,15 +84,8 @@ export default function Heatmap(){
             </div>
           </fieldset>
         </form>
-        <p>The color is currently saturated at {threshold} W.</p>
-        <form style={{ maxWidth: "250px" }}>
-          <fieldset className="form-group">
-            <label htmlFor="threshold">Saturation threshold</label>
-            <input id='threshold' className="custom-range" type="range" min="0" max="5000" step="100" value={threshold} onChange={e => setThreshold(e.target.value)} />
-          </fieldset>
-        </form>
       </div>
-      <table style={{ width: "100%", textAlign: "center" }}>
+      <table style={{ width: "100%", textAlign: "center", marginBottom: "20px" }}>
         <thead>
           <tr>
             <th>Timeslot</th>
@@ -95,6 +102,18 @@ export default function Heatmap(){
           {rows}
         </tbody>
       </table>
+      <div style={{ maxWidth: "600px" }}>
+        <form style={{ maxWidth: range_width }}>
+          <fieldset className="form-group">
+            <label htmlFor="thresholds">Thresholds</label>
+            <div id="thresholds">
+              <input id='ignore' className="custom-range" type="range" min="0" max={thresholdSaturation} step="100" style={{ width: `${(range_width - 2 * range_handle_width) * (thresholdSaturation) / range_max + range_handle_width}px`, position: "absolute" }} value={thresholdIgnore} onChange={e => setThresholdIgnore(e.target.value)} />
+              <input id='saturation' className="custom-range" type="range" min={thresholdIgnore} max={range_max} step="100" style={{ width: `${(range_width - 2 * range_handle_width) * (range_max - thresholdIgnore) / range_max + range_handle_width}px`, float: "right" }} value={thresholdSaturation} onChange={e => setThresholdSaturation(e.target.value)} />
+            </div>
+          </fieldset>
+        </form>
+        <p>{thresholdIgnore === "0" ? 'All available data is displayed' : `Timeslots with power usage below ${thresholdIgnore} W are hidden`}. The color is saturated at {thresholdSaturation}&nbsp;W.</p>
+      </div>
     </div>
   )
 }
