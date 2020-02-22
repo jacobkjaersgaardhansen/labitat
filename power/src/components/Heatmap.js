@@ -5,27 +5,58 @@ const default_thresholdSaturation = "1700"; // W
 const range_max = 3000; // W
 const range_handle_width = 16; // px
 const range_width = 250; // px
+const color_schemes = [
+  ['black', 'black', 'red', 'red'],
+  ['white', 'rgb(204, 255, 204)', 'rgb(0, 153, 0)', 'rgb(0, 153, 0)']
+];
+
+/**
+ * Used to translate any css compliant color string into three rgb integers,
+ * which can be used for further computations. It's ugly and annoying that you
+ * have to do this yourself. A well-defined color object should be built into Javascript.
+ * @param {string} color Any css compliant color string, e.g. "blue", "rgb(1,2,3)", "hsl(12,30%,12%)", "#FF00AA", "#AFF"
+ */
+function translateColor(color){
+  const element = document.getElementById("hiddenUsedToGetColors")
+  element.style.color = color;
+  const stringRGB = getComputedStyle(element).color;
+  const stringSplitted = stringRGB.split(',');
+  const red = stringSplitted[0].substring(4);
+  const green = stringSplitted[1].substring(1);;
+  const blue = stringSplitted[2].substring(1, stringSplitted[2].length - 1);
+  return [red, green, blue]
+}
+
+/**
+ * Gets the definition of a linear function from two points (x1, y1) and (x2, y2)
+ */
+function linear(x1, x2, y1, y2, x){
+  const a = (y2 - y1) / (x2 - x1);
+  const b = y1 - a * x1;
+  const y = a * x + b;
+  return { a, b, y }
+}
+
+/**
+ * Interpolate colors linearly
+ */
+function interpolate(color_start, color_end, start, end, current){
+  const [r_start, g_start, b_start] = translateColor(color_start);
+  const [r_end, g_end, b_end] = translateColor(color_end);
+  const r_current = linear(start, end, r_start, r_end, current).y;
+  const g_current = linear(start, end, g_start, g_end, current).y;
+  const b_current = linear(start, end, b_start, b_end, current).y;
+  return `rgb(${r_current}, ${g_current}, ${b_current})`
+}
+
 
 export default function Heatmap(){
   const [dateStart, setdateStart] = useState('2020-01-01');
   const [dateEnd, setdateEnd] = useState(new Date().toISOString().substring(0, 10));
   const [thresholdIgnore, setThresholdIgnore] = useState(default_thresholdIgnore);
   const [thresholdSaturation, setThresholdSaturation] = useState(default_thresholdSaturation);
-  const [isSimple, setIsSimple] = useState(true);
+  const [isSimple, setIsSimple] = useState(1);
   const [data, setData] = useState([]);
-
-  const colorIgnore = isSimple ? 'white' : 'black';
-  const colorLow = isSimple ? 'hsl(120, 100%, 90%)' : 'black';
-  const colorHigh = isSimple ? 'hsl(120, 100%, 30%)' : 'red';
-  const colorSaturation = isSimple ? 'hsl(120, 100%, 30%)' : 'red';
-  const colorInterpolate = x => isSimple ? 
-    `hsl(120, 100%, ${90 - (60 * (1 / (thresholdSaturation - thresholdIgnore) * x + 1 / (1 - thresholdSaturation / thresholdIgnore)))}%)` :
-    `rgb(${256 * (1 / (thresholdSaturation - thresholdIgnore) * x + 1 / (1 - thresholdSaturation / thresholdIgnore))}, 0, 0)`;
-  const colorHeat = x => {
-    return x < thresholdIgnore ? colorIgnore : 
-      x > thresholdSaturation ? colorSaturation :
-      colorInterpolate(x);
-  }
   
   useEffect(() => {
     const timeStart = new Date(dateStart).setHours(0);
@@ -50,6 +81,17 @@ export default function Heatmap(){
     }
   });
 
+  const colorIgnore = color_schemes[isSimple][0];
+  const colorLow = color_schemes[isSimple][1];
+  const colorHigh = color_schemes[isSimple][2];
+  const colorSaturation = color_schemes[isSimple][3];
+  const colorInterpolate = x => interpolate(color_schemes[isSimple][1], color_schemes[isSimple][2], thresholdIgnore, thresholdSaturation, x);
+  const colorHeat = x => {
+    return x < thresholdIgnore ? colorIgnore : 
+      x > thresholdSaturation ? colorSaturation :
+      colorInterpolate(x);
+  }
+
   const rows = [];
   for (let timeslot = 0; timeslot < 24; timeslot++){
     const days = [];
@@ -61,9 +103,9 @@ export default function Heatmap(){
           color: powerConsumption - thresholdIgnore < (thresholdSaturation - thresholdIgnore) / 3 * 2 ? 'lightgrey' : 'black', 
           backgroundColor: colorHeat(powerConsumption), 
           textAlign: 'center',
-          width: "10%",
-        }}>{isSimple || powerConsumption.toFixed()}</td> :
-        <td key={day} style={{ width: "10%" }}></td>
+          width: "11%",
+        }}>{isSimple ? null : powerConsumption.toFixed()}</td> :
+        <td key={day} style={{ width: "11%" }}></td>
       )
     }
     rows.push(
@@ -74,7 +116,6 @@ export default function Heatmap(){
       </tr>
     )
   }
-
   
   return (
     <div className="jumbotron">
@@ -175,15 +216,16 @@ export default function Heatmap(){
                   id='simpleView' 
                   className="form-check-input" 
                   type="checkbox"  
-                  checked={isSimple} 
-                  onChange={() => setIsSimple(prev => !prev)} 
+                  checked={!isSimple} 
+                  onChange={() => setIsSimple(prev => 1 - prev)} 
                 />
-                Simple view
+                Detailed view
               </label>
             </div>
           </fieldset>
         </form>
       </div>
+      <div id="hiddenUsedToGetColors"></div>
     </div>
   )
 }
