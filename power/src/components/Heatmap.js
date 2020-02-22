@@ -120,13 +120,13 @@ export default function Heatmap(){
   return (
     <div className="jumbotron">
       <div style={{ maxWidth: "600px" }}>
-        <h3>Average power usage during the week</h3>
-        <p>
-          The table shows the average power usage in watts across a week's 
-          24 times 7 hourly timeslots. 
+        <h3>{isSimple ? 'Labitat usage': 'Average power usage during the week'}</h3>
+        <p>{isSimple ? 'The table shows when it is most likely to find others \
+          in Labitat. ': "The table shows the average power usage in watts across \
+          a week's 24 times 7 hourly timeslots. "}
           The color saturation indicates the expected activity.
         </p>
-        <p>The averages are calculated across the given range including both days.</p>
+        <p>{isSimple ? 'The expactation is based on' : 'The averages are calculated across'} the given range including both days.</p>
         <form style={{ maxWidth: "350px" }}>
           <fieldset>
             <div className="form-group">
@@ -135,6 +135,22 @@ export default function Heatmap(){
                 <input id='start' type="date" className="form-control" style={{ maxWidth: "170px" }} value={dateStart} onChange={e => setdateStart(e.target.value)} />  
                 <input id='end' type="date" className="form-control" style={{ maxWidth: "170px" }} value={dateEnd} onChange={e => setdateEnd(e.target.value)} />
               </div>
+            </div>
+          </fieldset>
+        </form>
+        <form>
+          <fieldset className="form-group">
+            <div className="form-check">
+              <label className="form-check-label">
+                <input 
+                  id='simpleView' 
+                  className="form-check-input" 
+                  type="checkbox"  
+                  checked={!isSimple} 
+                  onChange={() => setIsSimple(prev => 1 - prev)} 
+                />
+                Detailed view
+              </label>
             </div>
           </fieldset>
         </form>
@@ -208,22 +224,6 @@ export default function Heatmap(){
             <p style={{ textAlign: "center", position: "absolute", left: `${(range_width ) * thresholdSaturation / range_max }px`, transform: "translate(-50%)" }}>{thresholdSaturation}</p>
           </div>
         </div>
-        <form>
-          <fieldset className="form-group">
-            <div className="form-check">
-              <label className="form-check-label">
-                <input 
-                  id='simpleView' 
-                  className="form-check-input" 
-                  type="checkbox"  
-                  checked={!isSimple} 
-                  onChange={() => setIsSimple(prev => 1 - prev)} 
-                />
-                Detailed view
-              </label>
-            </div>
-          </fieldset>
-        </form>
       </div>
       <div id="hiddenUsedToGetColors"></div>
     </div>
