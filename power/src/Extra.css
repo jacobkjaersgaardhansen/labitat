@@ -9,3 +9,30 @@
       display: none;
   }
 }
+
+.bars {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  height: 0.5rem;
+  overflow: hidden;
+  font-size: 0.703125rem;
+  background-color: #e9ecef;
+}
+
+.color-bar {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  overflow: hidden;
+  color: #fff;
+  text-align: center;
+  white-space: nowrap;
+}
